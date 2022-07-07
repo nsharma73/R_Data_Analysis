@@ -1768,31 +1768,241 @@ pre code {
 
 
 <!-- rnb-text-begin -->
-<p>This is an <a href="http://rmarkdown.rstudio.com">R Markdown</a>
-Notebook. When you execute code within the notebook, the results appear
-beneath the code.</p>
-<p>Try executing this chunk by clicking the <em>Run</em> button within
-the chunk or by placing your cursor inside it and pressing
-<em>Cmd+Shift+Enter</em>.</p>
+<p>This is a data cleaning notebook.</p>
+<p>About Dataset</p>
+<p>The Paycheck Protection Program (PPP) is a $953-billion business loan
+program established by the United States federal government, led by the
+Donald Trump administration in 2020 through the Coronavirus Aid, Relief,
+and Economic Security Act (CARES Act) to help certain businesses,
+self-employed workers, sole proprietors, certain non-profit
+organizations, and tribal businesses continue paying their workers.</p>
+<p>The Paycheck Protection Program allows entities to apply for
+low-interest private loans to pay for their payroll and certain other
+costs. The amount of a PPP loan is approximately equal to 2.5 times the
+applicant’s average monthly payroll costs. In some cases, an applicant
+may receive a second draw typically equal to the first. The loan
+proceeds may be used to cover payroll costs, rent, interest, and
+utilities. The loan may be partially or fully forgiven if the business
+keeps its employee counts and employee wages stable. The program is
+implemented by the U.S. Small Business Administration. The deadline to
+apply for a PPP loan was March 31, 2021. Some economists have found that
+the PPP did not save as many jobs as purported and aided too many
+businesses that were not at risk of going under. They noted that other
+programs, such as unemployment insurance, food assistance, and aid to
+state and local governments, would have been more efficient at
+strengthening the economy. Opponents to this view note that the PPP
+functioned well to prevent business closures and cannot be measured on
+the number of jobs saved alone.</p>
+<p>According to a 2022 study, the PPP: cumulatively preserved between 2
+and 3 million job-years of employment over 14 months at a cost of USD
+169K to USD 258K per job-year retained. These numbers imply that only 23
+to 34 percent of PPP dollars went directly to workers who would
+otherwise have lost jobs; the balance flowed to business owners and
+shareholders, including creditors and suppliers of PPP-receiving firms.
+Program incidence was ultimately highly regressive, with about
+three-quarters of PPP funds accruing to the top quintile of households.
+PPP’s breakneck scale-up, its high cost per job saved, and its
+regressive incidence have a common origin: PPP was essentially not
+specifically targeted because the United States lacked the
+administrative infrastructure to do otherwise. Harnessing modern
+administrative systems, other high-income countries were able to better
+target pandemic business aid to firms in financial distress. Building
+similar capacity in the U.S. would enable improved targeting when the
+next pandemic or other large-scale economic emergency inevitably
+arises.</p>
+<p>Additional Information: Created: April 5, 2022 Format: CSV License:
+Other (Public Domain) Size: 428.6 MB</p>
+<p>Load appropriate libraries and dataset</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxucGxvdChjYXJzKVxuYGBgIn0= -->
-<pre class="r"><code>plot(cars)</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShkcGx5cilcbmxpYnJhcnkoZ2dwbG90MilcbmxpYnJhcnkobHVicmlkYXRlKVxubGlicmFyeSh0aWR5dmVyc2UpXG5saWJyYXJ5KGZvcm1hdHRhYmxlKVxubGlicmFyeShndClcblxuI0xvYWQgRGF0YVxucHBwX2xvYW5zIDwtIHJlYWRyOjpyZWFkX2NzdihcIi4vcHBwX2xvYW5zLmNzdlwiKVxuZGltKHBwcF9sb2FucylcbnN0cihwcHBfbG9hbnMpXG5gYGAifQ== -->
+<pre class="r"><code>library(dplyr)
+library(ggplot2)
+library(lubridate)
+library(tidyverse)
+library(formattable)
+library(gt)
+
+#Load Data
+ppp_loans &lt;- readr::read_csv(&quot;./ppp_loans.csv&quot;)
+dim(ppp_loans)
+str(ppp_loans)</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
-<p>Add a new chunk by clicking the <em>Insert Chunk</em> button on the
-toolbar or by pressing <em>Cmd+Option+I</em>.</p>
-<p>When you save the notebook, an HTML file containing the code and
-output will be saved alongside it (click the <em>Preview</em> button or
-press <em>Cmd+Shift+K</em> to preview the HTML file).</p>
-<p>The preview shows you a rendered HTML copy of the contents of the
-editor. Consequently, unlike <em>Knit</em>, <em>Preview</em> does not
-run any R code chunks. Instead, the output of the chunk when it was last
-run in the editor is displayed.</p>
+<p>There are columns that are not needed, these fields have limited
+analytical value.</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuI2RlbGV0ZSBjb2x1bW5zIHRoYXQgYXJlIG5vdCBuZWVkZWQgZm9yIGFuYWx5c2lzXG5wcHBfbG9hbnMgPSBwcHBfbG9hbnNbLWMoMyw0LDYsNyw5LDEzLDE3LDE4LDE5LDIwLFxuICAgICAgICAgICAgICAgMjEsMjIsMjMsMzEsMzYsMzcsMzksNDAsNDEsNDIsNDMsNDUsNDcsNDgpXVxuXG5kaW0ocHBwX2xvYW5zKVxuc3RyKHBwcF9sb2FucylcbmBgYCJ9 -->
+<pre class="r"><code>#delete columns that are not needed for analysis
+ppp_loans = ppp_loans[-c(3,4,6,7,9,13,17,18,19,20,
+               21,22,23,31,36,37,39,40,41,42,43,45,47,48)]
+
+dim(ppp_loans)
+str(ppp_loans)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>Handling dates</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuI0NvbnZlcnQgRGF0ZSBBcHByb3ZlZCB0byBEYXRlIGRhdGF0eXBlXG5wcHBfbG9hbnMkRGF0ZUFwcHJvdmVkIDwtIGFzLkRhdGUocHBwX2xvYW5zJERhdGVBcHByb3ZlZCwgXCIlbS8lZC8lWVwiKVxuY2xhc3MocHBwX2xvYW5zJERhdGVBcHByb3ZlZClcbnVuaXF1ZShwcHBfbG9hbnMkRGF0ZUFwcHJvdmVkKVxubWluKHBwcF9sb2FucyREYXRlQXBwcm92ZWQpXG5tYXgocHBwX2xvYW5zJERhdGVBcHByb3ZlZClcblxuI0FkZCBZZWFyLU1vbnRoIHRvIHRyZW5kIGRhdGFcbnBwcF9sb2FucyRNb250aF9ZciA9IHN0cmZ0aW1lKHBwcF9sb2FucyREYXRlQXBwcm92ZWQsZm9ybWF0PVwiJVktJW1cIilcbnVuaXF1ZShwcHBfbG9hbnMkTW9udGhfWXIpXG5gYGAifQ== -->
+<pre class="r"><code>#Convert Date Approved to Date datatype
+ppp_loans$DateApproved &lt;- as.Date(ppp_loans$DateApproved, &quot;%m/%d/%Y&quot;)
+class(ppp_loans$DateApproved)
+unique(ppp_loans$DateApproved)
+min(ppp_loans$DateApproved)
+max(ppp_loans$DateApproved)
+
+#Add Year-Month to trend data
+ppp_loans$Month_Yr = strftime(ppp_loans$DateApproved,format=&quot;%Y-%m&quot;)
+unique(ppp_loans$Month_Yr)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>Example NA and handle null values where appropriate</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuI2V4YW1pbmUgbmEgYWNyb3NzIGNvbHVtbnNcbm1hcChwcHBfbG9hbnMsIH5zdW0oaXMubmEoLikpKVxuXG5zdW0oaXMubmEocHBwX2xvYW5zJEJvcnJvd2VyTmFtZSkpXG5wcHBfbG9hbnNbaXMubmEocHBwX2xvYW5zJEJvcnJvd2VyTmFtZSksXVxuXG5zdW0oaXMubmEocHBwX2xvYW5zJEJvcnJvd2VyU3RhdGUpKVxuXG5wcHBfbG9hbnMgPSBwcHBfbG9hbnMgJT4lXG4gIG11dGF0ZShCb3Jyb3dlclN0YXRlID0gaWZfZWxzZShpcy5uYShCb3Jyb3dlclN0YXRlKSAsIFByb2plY3RTdGF0ZSwgQm9ycm93ZXJTdGF0ZSkpXG5cbnN1bShpcy5uYShwcHBfbG9hbnMkQm9ycm93ZXJTdGF0ZSkpXG5cbnBwcF9sb2Fuc1tpcy5uYShwcHBfbG9hbnMkQm9ycm93ZXJTdGF0ZSksXVxuXG5wcHBfbG9hbnMgPSBwcHBfbG9hbnMgJT4lXG4gIG11dGF0ZShCdXNpbmVzc1R5cGUgPSBpZl9lbHNlKGlzLm5hKEJ1c2luZXNzVHlwZSkgLCBcIlVua25vd25cIiwgQnVzaW5lc3NUeXBlKSlcblxuc3VtKGlzLm5hKHBwcF9sb2FucyRCdXNpbmVzc1R5cGUpKVxuXG5wcHBfbG9hbnMgPSBwcHBfbG9hbnMgJT4lXG4gIG11dGF0ZShOb25Qcm9maXQgPSBpZl9lbHNlKGlzLm5hKE5vblByb2ZpdCkgLCBcIk5cIiwgTm9uUHJvZml0KSlcblxuc3VtKGlzLm5hKHBwcF9sb2FucyROb25Qcm9maXQpKVxuXG5wcHBfbG9hbnNbaXMubmEocHBwX2xvYW5zJEJ1c2luZXNzQWdlRGVzY3JpcHRpb24pLF1cblxucHBwX2xvYW5zID0gcHBwX2xvYW5zICU+JVxuICBtdXRhdGUoQnVzaW5lc3NBZ2VEZXNjcmlwdGlvbiA9IGlmX2Vsc2UoaXMubmEoQnVzaW5lc3NBZ2VEZXNjcmlwdGlvbikgLCBcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIFwiVW5hbnN3ZXJlZFwiLCBCdXNpbmVzc0FnZURlc2NyaXB0aW9uKSlcblxuc3VtKGlzLm5hKHBwcF9sb2FucyRCdXNpbmVzc0FnZURlc2NyaXB0aW9uKSlcblxuI0RlbGV0ZSBjb2x1bW5zOiBQcm9qZWN0Q2l0eSwgUHJvamVjdENvdW50eU5hbWUsIFByb2plY3RTdGF0ZSBDRFxucHBwX2xvYW5zID0gc3Vic2V0KHBwcF9sb2Fucywgc2VsZWN0ID0gLWMoUHJvamVjdENpdHksXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBQcm9qZWN0Q291bnR5TmFtZSxQcm9qZWN0U3RhdGUsQ0QpKVxuZGltKHBwcF9sb2FucylcbnRhaWwocHBwX2xvYW5zKVxuXG4jZXhhbWluZSBuYSBhY3Jvc3MgY29sdW1uc1xubWFwKHBwcF9sb2FucywgfnN1bShpcy5uYSguKSkpXG5cbnBwcF9sb2FucyA9IHBwcF9sb2FucyAlPiUgXG4gIG11dGF0ZShVbmRpc2J1cnNlZEFtb3VudCA9IGlmZWxzZShpcy5uYShVbmRpc2J1cnNlZEFtb3VudCksIFxuICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgMCwgVW5kaXNidXJzZWRBbW91bnQpKVxuXG5wcHBfbG9hbnMgPSBwcHBfbG9hbnMgJT4lIFxuICBtdXRhdGUoRm9yZ2l2ZW5lc3NBbW91bnQgPSBpZmVsc2UoaXMubmEoRm9yZ2l2ZW5lc3NBbW91bnQpLCBcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDAsIEZvcmdpdmVuZXNzQW1vdW50KSlcblxucHBwX2xvYW5zID0gcHBwX2xvYW5zICU+JSBcbiAgbXV0YXRlKEpvYnNSZXBvcnRlZCA9IGlmZWxzZShpcy5uYShKb2JzUmVwb3J0ZWQpLCBcbiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAwLCBKb2JzUmVwb3J0ZWQpKVxuXG5gYGAifQ== -->
+<pre class="r"><code>#examine na across columns
+map(ppp_loans, ~sum(is.na(.)))
+
+sum(is.na(ppp_loans$BorrowerName))
+ppp_loans[is.na(ppp_loans$BorrowerName),]
+
+sum(is.na(ppp_loans$BorrowerState))
+
+ppp_loans = ppp_loans %&gt;%
+  mutate(BorrowerState = if_else(is.na(BorrowerState) , ProjectState, BorrowerState))
+
+sum(is.na(ppp_loans$BorrowerState))
+
+ppp_loans[is.na(ppp_loans$BorrowerState),]
+
+ppp_loans = ppp_loans %&gt;%
+  mutate(BusinessType = if_else(is.na(BusinessType) , &quot;Unknown&quot;, BusinessType))
+
+sum(is.na(ppp_loans$BusinessType))
+
+ppp_loans = ppp_loans %&gt;%
+  mutate(NonProfit = if_else(is.na(NonProfit) , &quot;N&quot;, NonProfit))
+
+sum(is.na(ppp_loans$NonProfit))
+
+ppp_loans[is.na(ppp_loans$BusinessAgeDescription),]
+
+ppp_loans = ppp_loans %&gt;%
+  mutate(BusinessAgeDescription = if_else(is.na(BusinessAgeDescription) , 
+                                          &quot;Unanswered&quot;, BusinessAgeDescription))
+
+sum(is.na(ppp_loans$BusinessAgeDescription))
+
+#Delete columns: ProjectCity, ProjectCountyName, ProjectState CD
+ppp_loans = subset(ppp_loans, select = -c(ProjectCity,
+                                          ProjectCountyName,ProjectState,CD))
+dim(ppp_loans)
+tail(ppp_loans)
+
+#examine na across columns
+map(ppp_loans, ~sum(is.na(.)))
+
+ppp_loans = ppp_loans %&gt;% 
+  mutate(UndisbursedAmount = ifelse(is.na(UndisbursedAmount), 
+                                    0, UndisbursedAmount))
+
+ppp_loans = ppp_loans %&gt;% 
+  mutate(ForgivenessAmount = ifelse(is.na(ForgivenessAmount), 
+                                    0, ForgivenessAmount))
+
+ppp_loans = ppp_loans %&gt;% 
+  mutate(JobsReported = ifelse(is.na(JobsReported), 
+                               0, JobsReported))
+</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>The North American Industry Classification System (NAICS) is the
+standard used by Federal statistical agencies in classifying business
+establishments for the purpose of collecting, analyzing, and publishing
+statistical data related to the U.S. business economy. NACIS codes are
+important for industry analysis, we will segment the loans by Industry
+to better understand which industries were hardest hit by COVID</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuI2FkZCAyIGRpZ2l0IG5hY2lzIGNvZGUgYW5kIGluZHVzdHJ5IG1hcHBpbmdcbm5hY2lzIDwtIHJlYWRyOjpyZWFkX2NzdihcIi4vdHdvX2RpZ2l0X25haWNzX2NvZGUuY3N2XCIpXG5cbiNleHRyYWN0IDIgZGlnaXQgbmFjaXMgY29kZXMgZnJvbSBwcHAgbG9hbnMgZGF0YVxucHBwX2xvYW5zID0gcHBwX2xvYW5zJT4lXG4gIG11dGF0ZShOQUlDU0NvZGUyID0gYXMubnVtZXJpYyhnc3ViKFwiKF5cXFxcZHsyfSkuKlwiLCBcIlxcXFwxXCIsIHBwcF9sb2FucyROQUlDU0NvZGUpKSlcblxuc29ydCh1bmlxdWUocHBwX2xvYW5zJE5BSUNTQ29kZTIpKVxuXG51bmlxdWUobmFjaXMkTkFJQ1NDb2RlMilcblxuIyB1c2luZyBqb2luIHRvIGFkZCBJbmR1c3RyeSBkaW1lbnNpb24gXG5wcHBfbG9hbnMgPSBwcHBfbG9hbnMlPiVsZWZ0X2pvaW4obmFjaXMpXG5cbnBwcF9sb2FucyA9IHBwcF9sb2FucyAlPiUgXG4gIG11dGF0ZShJbmR1c3RyeSA9IGlmZWxzZShpcy5uYShJbmR1c3RyeSksIFwiVW5rbm93blwiLCBJbmR1c3RyeSkpXG5cbnVuaXF1ZShwcHBfbG9hbnMkSW5kdXN0cnkpXG5tYXAocHBwX2xvYW5zLCB+c3VtKGlzLm5hKC4pKSlcbmBgYCJ9 -->
+<pre class="r"><code>#add 2 digit nacis code and industry mapping
+nacis &lt;- readr::read_csv(&quot;./two_digit_naics_code.csv&quot;)
+
+#extract 2 digit nacis codes from ppp loans data
+ppp_loans = ppp_loans%&gt;%
+  mutate(NAICSCode2 = as.numeric(gsub(&quot;(^\\d{2}).*&quot;, &quot;\\1&quot;, ppp_loans$NAICSCode)))
+
+sort(unique(ppp_loans$NAICSCode2))
+
+unique(nacis$NAICSCode2)
+
+# using join to add Industry dimension 
+ppp_loans = ppp_loans%&gt;%left_join(nacis)
+
+ppp_loans = ppp_loans %&gt;% 
+  mutate(Industry = ifelse(is.na(Industry), &quot;Unknown&quot;, Industry))
+
+unique(ppp_loans$Industry)
+map(ppp_loans, ~sum(is.na(.)))</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>Remove metrics that are not needed for the analysis, we will focus on
+Current Approval Amount</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxucHBwX2xvYW5zJT4lXG4gIGdyb3VwX2J5KEJ1c2luZXNzVHlwZSklPiVcbiAgc3VtbWFyaXNlKGluaXRfYW10ID0gc3VtKEluaXRpYWxBcHByb3ZhbEFtb3VudCksXG4gICAgICAgICAgICBjdXJyX2FtdCA9IHN1bShDdXJyZW50QXBwcm92YWxBbW91bnQpLFxuICAgICAgICAgICAgdW5kaXNfYW10ID0gc3VtKFVuZGlzYnVyc2VkQW1vdW50KSxcbiAgICAgICAgICAgIGZvcmdfYW10ID0gc3VtKEZvcmdpdmVuZXNzQW1vdW50KSkgXG4gIFxuI1RoZSBVbmRpc2J1cnNlZEFtb3VudCBpcyBzbWFsbCBhbmQgd2Ugd2lsbCBpZ25vcmUgaXQgZm9yIHRoaXMgYW5hbHlzaXNcbnBwcF9sb2FucyA9IHN1YnNldChwcHBfbG9hbnMsIHNlbGVjdCA9IC1jKFVuZGlzYnVyc2VkQW1vdW50KSlcbmBgYCJ9 -->
+<pre class="r"><code>ppp_loans%&gt;%
+  group_by(BusinessType)%&gt;%
+  summarise(init_amt = sum(InitialApprovalAmount),
+            curr_amt = sum(CurrentApprovalAmount),
+            undis_amt = sum(UndisbursedAmount),
+            forg_amt = sum(ForgivenessAmount)) 
+  
+#The UndisbursedAmount is small and we will ignore it for this analysis
+ppp_loans = subset(ppp_loans, select = -c(UndisbursedAmount))</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>Add State and Population to data. We are adding an estimate of small
+businesses in the state based on 2017 estimates and payroll in USD. The
+dataset also has politics (red vs. blue) based on 2016 Presidential
+Election results.</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuc3RhdGVfcmIgPC0gcmVhZHI6OnJlYWRfY3N2KFwiLi9yZWRfdnNfYmx1ZV9zdGF0ZS5jc3ZcIilcbnN0YXRlX3JiID0gc3RhdGVfcmIlPiVtdXRhdGUoQm9ycm93ZXJTdGF0ZSA9IHN0cl90cmltKHN0YXRlX3JiJEJvcnJvd2VyU3RhdGUpKVxuc3RhdGVfcmIgPSBzdGF0ZV9yYiU+JW11dGF0ZShwb2xpdGljcyA9IGlmZWxzZShpcy5uYShSZWQpLCBcIkJsdWVcIiwgXCJSZWRcIikpXG5cbnBwcF9sb2FucyA9IHBwcF9sb2FucyU+JWxlZnRfam9pbihzdGF0ZV9yYiwgYnk9XCJCb3Jyb3dlclN0YXRlXCIpXG5kaW0ocHBwX2xvYW5zKVxuXG5zdGF0ZV9wb3AgPC0gcmVhZHI6OnJlYWRfY3N2KFwiLi9TdGF0ZV9QT1BfU0JfUGF5cm9sbC5jc3ZcIilcbnN0YXRlX3BvcCA9IHN0YXRlX3BvcCU+JW11dGF0ZShCb3Jyb3dlclN0YXRlID0gXG4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBzdHJfdHJpbShzdGF0ZV9wb3AkQm9ycm93ZXJTdGF0ZSkpXG5wcHBfbG9hbnMgPSBwcHBfbG9hbnMlPiVsZWZ0X2pvaW4oc3RhdGVfcG9wKVxuZGltKHBwcF9sb2FucylcblxucHBwX2xvYW5zJT4lXG4gIHNlbGVjdChQb3B1bGF0aW9uLFxuICAgICAgICAgU21hbGxfQnVzaW5lc3NfQ250LFxuICAgICAgICAgRW1wbG95bWVudF9Fc3RpbWF0ZV8yMDE3LFxuICAgICAgICAgQW5udWFsX3BheXJvbGxfaW5fdGhvdXNhbmQpXG4jY2hlY2sgbmEgb25jZSBtb3JlXG5tYXAocHBwX2xvYW5zLCB+c3VtKGlzLm5hKC4pKSlcbmBgYCJ9 -->
+<pre class="r"><code>state_rb &lt;- readr::read_csv(&quot;./red_vs_blue_state.csv&quot;)
+state_rb = state_rb%&gt;%mutate(BorrowerState = str_trim(state_rb$BorrowerState))
+state_rb = state_rb%&gt;%mutate(politics = ifelse(is.na(Red), &quot;Blue&quot;, &quot;Red&quot;))
+
+ppp_loans = ppp_loans%&gt;%left_join(state_rb, by=&quot;BorrowerState&quot;)
+dim(ppp_loans)
+
+state_pop &lt;- readr::read_csv(&quot;./State_POP_SB_Payroll.csv&quot;)
+state_pop = state_pop%&gt;%mutate(BorrowerState = 
+                                 str_trim(state_pop$BorrowerState))
+ppp_loans = ppp_loans%&gt;%left_join(state_pop)
+dim(ppp_loans)
+
+ppp_loans%&gt;%
+  select(Population,
+         Small_Business_Cnt,
+         Employment_Estimate_2017,
+         Annual_payroll_in_thousand)
+#check na once more
+map(ppp_loans, ~sum(is.na(.)))</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 
-<div id="rmd-source-code">LS0tCnRpdGxlOiAiUiBOb3RlYm9vayIKb3V0cHV0OiBodG1sX25vdGVib29rCi0tLQoKVGhpcyBpcyBhbiBbUiBNYXJrZG93bl0oaHR0cDovL3JtYXJrZG93bi5yc3R1ZGlvLmNvbSkgTm90ZWJvb2suIFdoZW4geW91IGV4ZWN1dGUgY29kZSB3aXRoaW4gdGhlIG5vdGVib29rLCB0aGUgcmVzdWx0cyBhcHBlYXIgYmVuZWF0aCB0aGUgY29kZS4gCgpUcnkgZXhlY3V0aW5nIHRoaXMgY2h1bmsgYnkgY2xpY2tpbmcgdGhlICpSdW4qIGJ1dHRvbiB3aXRoaW4gdGhlIGNodW5rIG9yIGJ5IHBsYWNpbmcgeW91ciBjdXJzb3IgaW5zaWRlIGl0IGFuZCBwcmVzc2luZyAqQ21kK1NoaWZ0K0VudGVyKi4gCgpgYGB7cn0KcGxvdChjYXJzKQpgYGAKCkFkZCBhIG5ldyBjaHVuayBieSBjbGlja2luZyB0aGUgKkluc2VydCBDaHVuayogYnV0dG9uIG9uIHRoZSB0b29sYmFyIG9yIGJ5IHByZXNzaW5nICpDbWQrT3B0aW9uK0kqLgoKV2hlbiB5b3Ugc2F2ZSB0aGUgbm90ZWJvb2ssIGFuIEhUTUwgZmlsZSBjb250YWluaW5nIHRoZSBjb2RlIGFuZCBvdXRwdXQgd2lsbCBiZSBzYXZlZCBhbG9uZ3NpZGUgaXQgKGNsaWNrIHRoZSAqUHJldmlldyogYnV0dG9uIG9yIHByZXNzICpDbWQrU2hpZnQrSyogdG8gcHJldmlldyB0aGUgSFRNTCBmaWxlKS4gCgpUaGUgcHJldmlldyBzaG93cyB5b3UgYSByZW5kZXJlZCBIVE1MIGNvcHkgb2YgdGhlIGNvbnRlbnRzIG9mIHRoZSBlZGl0b3IuIENvbnNlcXVlbnRseSwgdW5saWtlICpLbml0KiwgKlByZXZpZXcqIGRvZXMgbm90IHJ1biBhbnkgUiBjb2RlIGNodW5rcy4gSW5zdGVhZCwgdGhlIG91dHB1dCBvZiB0aGUgY2h1bmsgd2hlbiBpdCB3YXMgbGFzdCBydW4gaW4gdGhlIGVkaXRvciBpcyBkaXNwbGF5ZWQuCgo=</div>
+<div id="rmd-source-code">LS0tCnRpdGxlOiAiUiBOb3RlYm9vayIKb3V0cHV0OiBodG1sX25vdGVib29rCi0tLQoKVGhpcyBpcyBhIGRhdGEgY2xlYW5pbmcgbm90ZWJvb2suIAoKQWJvdXQgRGF0YXNldAoKVGhlIFBheWNoZWNrIFByb3RlY3Rpb24gUHJvZ3JhbSAoUFBQKSBpcyBhICQ5NTMtYmlsbGlvbiBidXNpbmVzcyBsb2FuIHByb2dyYW0gZXN0YWJsaXNoZWQgYnkgdGhlIFVuaXRlZCBTdGF0ZXMgZmVkZXJhbCBnb3Zlcm5tZW50LCBsZWQgYnkgdGhlIERvbmFsZCBUcnVtcCBhZG1pbmlzdHJhdGlvbiBpbiAyMDIwIHRocm91Z2ggdGhlIENvcm9uYXZpcnVzIEFpZCwgUmVsaWVmLCBhbmQgRWNvbm9taWMgU2VjdXJpdHkgQWN0IChDQVJFUyBBY3QpIHRvIGhlbHAgY2VydGFpbiBidXNpbmVzc2VzLCBzZWxmLWVtcGxveWVkIHdvcmtlcnMsIHNvbGUgcHJvcHJpZXRvcnMsIGNlcnRhaW4gbm9uLXByb2ZpdCBvcmdhbml6YXRpb25zLCBhbmQgdHJpYmFsIGJ1c2luZXNzZXMgY29udGludWUgcGF5aW5nIHRoZWlyIHdvcmtlcnMuCgpUaGUgUGF5Y2hlY2sgUHJvdGVjdGlvbiBQcm9ncmFtIGFsbG93cyBlbnRpdGllcyB0byBhcHBseSBmb3IgbG93LWludGVyZXN0IHByaXZhdGUgbG9hbnMgdG8gcGF5IGZvciB0aGVpciBwYXlyb2xsIGFuZCBjZXJ0YWluIG90aGVyIGNvc3RzLiBUaGUgYW1vdW50IG9mIGEgUFBQIGxvYW4gaXMgYXBwcm94aW1hdGVseSBlcXVhbCB0byAyLjUgdGltZXMgdGhlIGFwcGxpY2FudCdzIGF2ZXJhZ2UgbW9udGhseSBwYXlyb2xsIGNvc3RzLiBJbiBzb21lIGNhc2VzLCBhbiBhcHBsaWNhbnQgbWF5IHJlY2VpdmUgYSBzZWNvbmQgZHJhdyB0eXBpY2FsbHkgZXF1YWwgdG8gdGhlIGZpcnN0LiBUaGUgbG9hbiBwcm9jZWVkcyBtYXkgYmUgdXNlZCB0byBjb3ZlciBwYXlyb2xsIGNvc3RzLCByZW50LCBpbnRlcmVzdCwgYW5kIHV0aWxpdGllcy4gVGhlIGxvYW4gbWF5IGJlIHBhcnRpYWxseSBvciBmdWxseSBmb3JnaXZlbiBpZiB0aGUgYnVzaW5lc3Mga2VlcHMgaXRzIGVtcGxveWVlIGNvdW50cyBhbmQgZW1wbG95ZWUgd2FnZXMgc3RhYmxlLiBUaGUgcHJvZ3JhbSBpcyBpbXBsZW1lbnRlZCBieSB0aGUgVS5TLiBTbWFsbCBCdXNpbmVzcyBBZG1pbmlzdHJhdGlvbi4gVGhlIGRlYWRsaW5lIHRvIGFwcGx5IGZvciBhIFBQUCBsb2FuIHdhcyBNYXJjaCAzMSwgMjAyMS4KU29tZSBlY29ub21pc3RzIGhhdmUgZm91bmQgdGhhdCB0aGUgUFBQIGRpZCBub3Qgc2F2ZSBhcyBtYW55IGpvYnMgYXMgcHVycG9ydGVkIGFuZCBhaWRlZCB0b28gbWFueSBidXNpbmVzc2VzIHRoYXQgd2VyZSBub3QgYXQgcmlzayBvZiBnb2luZyB1bmRlci4gVGhleSBub3RlZCB0aGF0IG90aGVyIHByb2dyYW1zLCBzdWNoIGFzIHVuZW1wbG95bWVudCBpbnN1cmFuY2UsIGZvb2QgYXNzaXN0YW5jZSwgYW5kIGFpZCB0byBzdGF0ZSBhbmQgbG9jYWwgZ292ZXJubWVudHMsIHdvdWxkIGhhdmUgYmVlbiBtb3JlIGVmZmljaWVudCBhdCBzdHJlbmd0aGVuaW5nIHRoZSBlY29ub215LiBPcHBvbmVudHMgdG8gdGhpcyB2aWV3IG5vdGUgdGhhdCB0aGUgUFBQIGZ1bmN0aW9uZWQgd2VsbCB0byBwcmV2ZW50IGJ1c2luZXNzIGNsb3N1cmVzIGFuZCBjYW5ub3QgYmUgbWVhc3VyZWQgb24gdGhlIG51bWJlciBvZiBqb2JzIHNhdmVkIGFsb25lLgoKQWNjb3JkaW5nIHRvIGEgMjAyMiBzdHVkeSwgdGhlIFBQUDogY3VtdWxhdGl2ZWx5IHByZXNlcnZlZCBiZXR3ZWVuIDIgYW5kIDMgbWlsbGlvbiBqb2IteWVhcnMgb2YgZW1wbG95bWVudCBvdmVyIDE0IG1vbnRocyBhdCBhIGNvc3Qgb2YgVVNEIDE2OUsgdG8gVVNEIDI1OEsgcGVyIGpvYi15ZWFyIHJldGFpbmVkLiBUaGVzZSBudW1iZXJzIGltcGx5IHRoYXQgb25seSAyMyB0byAzNCBwZXJjZW50IG9mIFBQUCBkb2xsYXJzIHdlbnQgZGlyZWN0bHkgdG8gd29ya2VycyB3aG8gd291bGQgb3RoZXJ3aXNlIGhhdmUgbG9zdCBqb2JzOyB0aGUgYmFsYW5jZSBmbG93ZWQgdG8gYnVzaW5lc3Mgb3duZXJzIGFuZCBzaGFyZWhvbGRlcnMsIGluY2x1ZGluZyBjcmVkaXRvcnMgYW5kIHN1cHBsaWVycyBvZiBQUFAtcmVjZWl2aW5nIGZpcm1zLiBQcm9ncmFtIGluY2lkZW5jZSB3YXMgdWx0aW1hdGVseSBoaWdobHkgcmVncmVzc2l2ZSwgd2l0aCBhYm91dCB0aHJlZS1xdWFydGVycyBvZiBQUFAgZnVuZHMgYWNjcnVpbmcgdG8gdGhlIHRvcCBxdWludGlsZSBvZiBob3VzZWhvbGRzLiBQUFAncyBicmVha25lY2sgc2NhbGUtdXAsIGl0cyBoaWdoIGNvc3QgcGVyIGpvYiBzYXZlZCwgYW5kIGl0cyByZWdyZXNzaXZlIGluY2lkZW5jZSBoYXZlIGEgY29tbW9uIG9yaWdpbjogUFBQIHdhcyBlc3NlbnRpYWxseSBub3Qgc3BlY2lmaWNhbGx5IHRhcmdldGVkIGJlY2F1c2UgdGhlIFVuaXRlZCBTdGF0ZXMgbGFja2VkIHRoZSBhZG1pbmlzdHJhdGl2ZSBpbmZyYXN0cnVjdHVyZSB0byBkbyBvdGhlcndpc2UuIEhhcm5lc3NpbmcgbW9kZXJuIGFkbWluaXN0cmF0aXZlIHN5c3RlbXMsIG90aGVyIGhpZ2gtaW5jb21lIGNvdW50cmllcyB3ZXJlIGFibGUgdG8gYmV0dGVyIHRhcmdldCBwYW5kZW1pYyBidXNpbmVzcyBhaWQgdG8gZmlybXMgaW4gZmluYW5jaWFsIGRpc3RyZXNzLiBCdWlsZGluZyBzaW1pbGFyIGNhcGFjaXR5IGluIHRoZSBVLlMuIHdvdWxkIGVuYWJsZSBpbXByb3ZlZCB0YXJnZXRpbmcgd2hlbiB0aGUgbmV4dCBwYW5kZW1pYyBvciBvdGhlciBsYXJnZS1zY2FsZSBlY29ub21pYyBlbWVyZ2VuY3kgaW5ldml0YWJseSBhcmlzZXMuCgpBZGRpdGlvbmFsIEluZm9ybWF0aW9uOgpDcmVhdGVkOiBBcHJpbCA1LCAyMDIyCkZvcm1hdDogQ1NWCkxpY2Vuc2U6IE90aGVyIChQdWJsaWMgRG9tYWluKQpTaXplOiA0MjguNiBNQgoKTG9hZCBhcHByb3ByaWF0ZSBsaWJyYXJpZXMgYW5kIGRhdGFzZXQKYGBge3J9CmxpYnJhcnkoZHBseXIpCmxpYnJhcnkoZ2dwbG90MikKbGlicmFyeShsdWJyaWRhdGUpCmxpYnJhcnkodGlkeXZlcnNlKQpsaWJyYXJ5KGZvcm1hdHRhYmxlKQpsaWJyYXJ5KGd0KQoKI0xvYWQgRGF0YQpwcHBfbG9hbnMgPC0gcmVhZHI6OnJlYWRfY3N2KCIuL3BwcF9sb2Fucy5jc3YiKQpkaW0ocHBwX2xvYW5zKQpzdHIocHBwX2xvYW5zKQpgYGAKClRoZXJlIGFyZSBjb2x1bW5zIHRoYXQgYXJlIG5vdCBuZWVkZWQsIHRoZXNlIGZpZWxkcyBoYXZlIGxpbWl0ZWQgYW5hbHl0aWNhbCB2YWx1ZS4KCmBgYHtyfQojZGVsZXRlIGNvbHVtbnMgdGhhdCBhcmUgbm90IG5lZWRlZCBmb3IgYW5hbHlzaXMKcHBwX2xvYW5zID0gcHBwX2xvYW5zWy1jKDMsNCw2LDcsOSwxMywxNywxOCwxOSwyMCwKICAgICAgICAgICAgICAgMjEsMjIsMjMsMzEsMzYsMzcsMzksNDAsNDEsNDIsNDMsNDUsNDcsNDgpXQoKZGltKHBwcF9sb2FucykKc3RyKHBwcF9sb2FucykKYGBgCgpIYW5kbGluZyBkYXRlcwpgYGB7cn0KI0NvbnZlcnQgRGF0ZSBBcHByb3ZlZCB0byBEYXRlIGRhdGF0eXBlCnBwcF9sb2FucyREYXRlQXBwcm92ZWQgPC0gYXMuRGF0ZShwcHBfbG9hbnMkRGF0ZUFwcHJvdmVkLCAiJW0vJWQvJVkiKQpjbGFzcyhwcHBfbG9hbnMkRGF0ZUFwcHJvdmVkKQp1bmlxdWUocHBwX2xvYW5zJERhdGVBcHByb3ZlZCkKbWluKHBwcF9sb2FucyREYXRlQXBwcm92ZWQpCm1heChwcHBfbG9hbnMkRGF0ZUFwcHJvdmVkKQoKI0FkZCBZZWFyLU1vbnRoIHRvIHRyZW5kIGRhdGEKcHBwX2xvYW5zJE1vbnRoX1lyID0gc3RyZnRpbWUocHBwX2xvYW5zJERhdGVBcHByb3ZlZCxmb3JtYXQ9IiVZLSVtIikKdW5pcXVlKHBwcF9sb2FucyRNb250aF9ZcikKYGBgCkV4YW1wbGUgTkEgYW5kIGhhbmRsZSBudWxsIHZhbHVlcyB3aGVyZSBhcHByb3ByaWF0ZQpgYGB7cn0KI2V4YW1pbmUgbmEgYWNyb3NzIGNvbHVtbnMKbWFwKHBwcF9sb2FucywgfnN1bShpcy5uYSguKSkpCgpzdW0oaXMubmEocHBwX2xvYW5zJEJvcnJvd2VyTmFtZSkpCnBwcF9sb2Fuc1tpcy5uYShwcHBfbG9hbnMkQm9ycm93ZXJOYW1lKSxdCgpzdW0oaXMubmEocHBwX2xvYW5zJEJvcnJvd2VyU3RhdGUpKQoKcHBwX2xvYW5zID0gcHBwX2xvYW5zICU+JQogIG11dGF0ZShCb3Jyb3dlclN0YXRlID0gaWZfZWxzZShpcy5uYShCb3Jyb3dlclN0YXRlKSAsIFByb2plY3RTdGF0ZSwgQm9ycm93ZXJTdGF0ZSkpCgpzdW0oaXMubmEocHBwX2xvYW5zJEJvcnJvd2VyU3RhdGUpKQoKcHBwX2xvYW5zW2lzLm5hKHBwcF9sb2FucyRCb3Jyb3dlclN0YXRlKSxdCgpwcHBfbG9hbnMgPSBwcHBfbG9hbnMgJT4lCiAgbXV0YXRlKEJ1c2luZXNzVHlwZSA9IGlmX2Vsc2UoaXMubmEoQnVzaW5lc3NUeXBlKSAsICJVbmtub3duIiwgQnVzaW5lc3NUeXBlKSkKCnN1bShpcy5uYShwcHBfbG9hbnMkQnVzaW5lc3NUeXBlKSkKCnBwcF9sb2FucyA9IHBwcF9sb2FucyAlPiUKICBtdXRhdGUoTm9uUHJvZml0ID0gaWZfZWxzZShpcy5uYShOb25Qcm9maXQpICwgIk4iLCBOb25Qcm9maXQpKQoKc3VtKGlzLm5hKHBwcF9sb2FucyROb25Qcm9maXQpKQoKcHBwX2xvYW5zW2lzLm5hKHBwcF9sb2FucyRCdXNpbmVzc0FnZURlc2NyaXB0aW9uKSxdCgpwcHBfbG9hbnMgPSBwcHBfbG9hbnMgJT4lCiAgbXV0YXRlKEJ1c2luZXNzQWdlRGVzY3JpcHRpb24gPSBpZl9lbHNlKGlzLm5hKEJ1c2luZXNzQWdlRGVzY3JpcHRpb24pICwgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICJVbmFuc3dlcmVkIiwgQnVzaW5lc3NBZ2VEZXNjcmlwdGlvbikpCgpzdW0oaXMubmEocHBwX2xvYW5zJEJ1c2luZXNzQWdlRGVzY3JpcHRpb24pKQoKI0RlbGV0ZSBjb2x1bW5zOiBQcm9qZWN0Q2l0eSwgUHJvamVjdENvdW50eU5hbWUsIFByb2plY3RTdGF0ZSBDRApwcHBfbG9hbnMgPSBzdWJzZXQocHBwX2xvYW5zLCBzZWxlY3QgPSAtYyhQcm9qZWN0Q2l0eSwKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgUHJvamVjdENvdW50eU5hbWUsUHJvamVjdFN0YXRlLENEKSkKZGltKHBwcF9sb2FucykKdGFpbChwcHBfbG9hbnMpCgojZXhhbWluZSBuYSBhY3Jvc3MgY29sdW1ucwptYXAocHBwX2xvYW5zLCB+c3VtKGlzLm5hKC4pKSkKCnBwcF9sb2FucyA9IHBwcF9sb2FucyAlPiUgCiAgbXV0YXRlKFVuZGlzYnVyc2VkQW1vdW50ID0gaWZlbHNlKGlzLm5hKFVuZGlzYnVyc2VkQW1vdW50KSwgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDAsIFVuZGlzYnVyc2VkQW1vdW50KSkKCnBwcF9sb2FucyA9IHBwcF9sb2FucyAlPiUgCiAgbXV0YXRlKEZvcmdpdmVuZXNzQW1vdW50ID0gaWZlbHNlKGlzLm5hKEZvcmdpdmVuZXNzQW1vdW50KSwgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDAsIEZvcmdpdmVuZXNzQW1vdW50KSkKCnBwcF9sb2FucyA9IHBwcF9sb2FucyAlPiUgCiAgbXV0YXRlKEpvYnNSZXBvcnRlZCA9IGlmZWxzZShpcy5uYShKb2JzUmVwb3J0ZWQpLCAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIDAsIEpvYnNSZXBvcnRlZCkpCgpgYGAKVGhlIE5vcnRoIEFtZXJpY2FuIEluZHVzdHJ5IENsYXNzaWZpY2F0aW9uIFN5c3RlbSAoTkFJQ1MpIGlzIHRoZSBzdGFuZGFyZCB1c2VkIGJ5IEZlZGVyYWwgc3RhdGlzdGljYWwgYWdlbmNpZXMgaW4gY2xhc3NpZnlpbmcgYnVzaW5lc3MgZXN0YWJsaXNobWVudHMgZm9yIHRoZSBwdXJwb3NlIG9mIGNvbGxlY3RpbmcsIGFuYWx5emluZywgYW5kIHB1Ymxpc2hpbmcgc3RhdGlzdGljYWwgZGF0YSByZWxhdGVkIHRvIHRoZSBVLlMuIGJ1c2luZXNzIGVjb25vbXkuIE5BQ0lTIGNvZGVzIGFyZSBpbXBvcnRhbnQgZm9yIGluZHVzdHJ5IGFuYWx5c2lzLCB3ZSB3aWxsIHNlZ21lbnQgdGhlIGxvYW5zIGJ5IEluZHVzdHJ5IHRvIGJldHRlciB1bmRlcnN0YW5kIHdoaWNoIGluZHVzdHJpZXMgd2VyZSBoYXJkZXN0IGhpdCBieSBDT1ZJRAoKYGBge3J9CiNhZGQgMiBkaWdpdCBuYWNpcyBjb2RlIGFuZCBpbmR1c3RyeSBtYXBwaW5nCm5hY2lzIDwtIHJlYWRyOjpyZWFkX2NzdigiLi90d29fZGlnaXRfbmFpY3NfY29kZS5jc3YiKQoKI2V4dHJhY3QgMiBkaWdpdCBuYWNpcyBjb2RlcyBmcm9tIHBwcCBsb2FucyBkYXRhCnBwcF9sb2FucyA9IHBwcF9sb2FucyU+JQogIG11dGF0ZShOQUlDU0NvZGUyID0gYXMubnVtZXJpYyhnc3ViKCIoXlxcZHsyfSkuKiIsICJcXDEiLCBwcHBfbG9hbnMkTkFJQ1NDb2RlKSkpCgpzb3J0KHVuaXF1ZShwcHBfbG9hbnMkTkFJQ1NDb2RlMikpCgp1bmlxdWUobmFjaXMkTkFJQ1NDb2RlMikKCiMgdXNpbmcgam9pbiB0byBhZGQgSW5kdXN0cnkgZGltZW5zaW9uIApwcHBfbG9hbnMgPSBwcHBfbG9hbnMlPiVsZWZ0X2pvaW4obmFjaXMpCgpwcHBfbG9hbnMgPSBwcHBfbG9hbnMgJT4lIAogIG11dGF0ZShJbmR1c3RyeSA9IGlmZWxzZShpcy5uYShJbmR1c3RyeSksICJVbmtub3duIiwgSW5kdXN0cnkpKQoKdW5pcXVlKHBwcF9sb2FucyRJbmR1c3RyeSkKbWFwKHBwcF9sb2FucywgfnN1bShpcy5uYSguKSkpCmBgYAoKUmVtb3ZlIG1ldHJpY3MgdGhhdCBhcmUgbm90IG5lZWRlZCBmb3IgdGhlIGFuYWx5c2lzLCB3ZSB3aWxsIGZvY3VzIG9uIEN1cnJlbnQgQXBwcm92YWwgQW1vdW50CgpgYGB7cn0KcHBwX2xvYW5zJT4lCiAgZ3JvdXBfYnkoQnVzaW5lc3NUeXBlKSU+JQogIHN1bW1hcmlzZShpbml0X2FtdCA9IHN1bShJbml0aWFsQXBwcm92YWxBbW91bnQpLAogICAgICAgICAgICBjdXJyX2FtdCA9IHN1bShDdXJyZW50QXBwcm92YWxBbW91bnQpLAogICAgICAgICAgICB1bmRpc19hbXQgPSBzdW0oVW5kaXNidXJzZWRBbW91bnQpLAogICAgICAgICAgICBmb3JnX2FtdCA9IHN1bShGb3JnaXZlbmVzc0Ftb3VudCkpIAogIAojVGhlIFVuZGlzYnVyc2VkQW1vdW50IGlzIHNtYWxsIGFuZCB3ZSB3aWxsIGlnbm9yZSBpdCBmb3IgdGhpcyBhbmFseXNpcwpwcHBfbG9hbnMgPSBzdWJzZXQocHBwX2xvYW5zLCBzZWxlY3QgPSAtYyhVbmRpc2J1cnNlZEFtb3VudCkpCmBgYAoKQWRkIFN0YXRlIGFuZCBQb3B1bGF0aW9uIHRvIGRhdGEuIFdlIGFyZSBhZGRpbmcgYW4gZXN0aW1hdGUgb2Ygc21hbGwgYnVzaW5lc3NlcyBpbiB0aGUgc3RhdGUgYmFzZWQgb24gMjAxNyBlc3RpbWF0ZXMgYW5kIHBheXJvbGwgaW4gVVNELiBUaGUgZGF0YXNldCBhbHNvIGhhcyBwb2xpdGljcyAocmVkIHZzLiBibHVlKSBiYXNlZCBvbiAyMDE2IFByZXNpZGVudGlhbCBFbGVjdGlvbiByZXN1bHRzLgoKYGBge3J9CnN0YXRlX3JiIDwtIHJlYWRyOjpyZWFkX2NzdigiLi9yZWRfdnNfYmx1ZV9zdGF0ZS5jc3YiKQpzdGF0ZV9yYiA9IHN0YXRlX3JiJT4lbXV0YXRlKEJvcnJvd2VyU3RhdGUgPSBzdHJfdHJpbShzdGF0ZV9yYiRCb3Jyb3dlclN0YXRlKSkKc3RhdGVfcmIgPSBzdGF0ZV9yYiU+JW11dGF0ZShwb2xpdGljcyA9IGlmZWxzZShpcy5uYShSZWQpLCAiQmx1ZSIsICJSZWQiKSkKCnBwcF9sb2FucyA9IHBwcF9sb2FucyU+JWxlZnRfam9pbihzdGF0ZV9yYiwgYnk9IkJvcnJvd2VyU3RhdGUiKQpkaW0ocHBwX2xvYW5zKQoKc3RhdGVfcG9wIDwtIHJlYWRyOjpyZWFkX2NzdigiLi9TdGF0ZV9QT1BfU0JfUGF5cm9sbC5jc3YiKQpzdGF0ZV9wb3AgPSBzdGF0ZV9wb3AlPiVtdXRhdGUoQm9ycm93ZXJTdGF0ZSA9IAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBzdHJfdHJpbShzdGF0ZV9wb3AkQm9ycm93ZXJTdGF0ZSkpCnBwcF9sb2FucyA9IHBwcF9sb2FucyU+JWxlZnRfam9pbihzdGF0ZV9wb3ApCmRpbShwcHBfbG9hbnMpCgpwcHBfbG9hbnMlPiUKICBzZWxlY3QoUG9wdWxhdGlvbiwKICAgICAgICAgU21hbGxfQnVzaW5lc3NfQ250LAogICAgICAgICBFbXBsb3ltZW50X0VzdGltYXRlXzIwMTcsCiAgICAgICAgIEFubnVhbF9wYXlyb2xsX2luX3Rob3VzYW5kKQojY2hlY2sgbmEgb25jZSBtb3JlCm1hcChwcHBfbG9hbnMsIH5zdW0oaXMubmEoLikpKQpgYGAKCg==</div>
 
 
 

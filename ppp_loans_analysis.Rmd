@@ -1,0 +1,184 @@
+---
+title: "PPP_Loans_Analysis"
+output: html_document
+date: '2022-07-07'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## PPP Loans Analysis
+
+The Paycheck Protection Program (PPP) is a $953-billion business loan program established by the United States federal government, led by the Donald Trump administration in 2020 through the Coronavirus Aid, Relief, and Economic Security Act (CARES Act) to help certain businesses, self-employed workers, sole proprietors, certain non-profit organizations, and tribal businesses continue paying their workers.
+
+The Paycheck Protection Program allows entities to apply for low-interest private loans to pay for their payroll and certain other costs. The amount of a PPP loan is approximately equal to 2.5 times the applicant's average monthly payroll costs. In some cases, an applicant may receive a second draw typically equal to the first. The loan proceeds may be used to cover payroll costs, rent, interest, and utilities. The loan may be partially or fully forgiven if the business keeps its employee counts and employee wages stable. The program is implemented by the U.S. Small Business Administration. The deadline to apply for a PPP loan was March 31, 2021.
+Some economists have found that the PPP did not save as many jobs as purported and aided too many businesses that were not at risk of going under. They noted that other programs, such as unemployment insurance, food assistance, and aid to state and local governments, would have been more efficient at strengthening the economy. Opponents to this view note that the PPP functioned well to prevent business closures and cannot be measured on the number of jobs saved alone.
+
+According to a 2022 study, the PPP: cumulatively preserved between 2 and 3 million job-years of employment over 14 months at a cost of USD 169K to USD 258K per job-year retained. These numbers imply that only 23 to 34 percent of PPP dollars went directly to workers who would otherwise have lost jobs; the balance flowed to business owners and shareholders, including creditors and suppliers of PPP-receiving firms. Program incidence was ultimately highly regressive, with about three-quarters of PPP funds accruing to the top quintile of households. PPP's breakneck scale-up, its high cost per job saved, and its regressive incidence have a common origin: PPP was essentially not specifically targeted because the United States lacked the administrative infrastructure to do otherwise. Harnessing modern administrative systems, other high-income countries were able to better target pandemic business aid to firms in financial distress. Building similar capacity in the U.S. would enable improved targeting when the next pandemic or other large-scale economic emergency inevitably arises.
+
+* Research Questions *
+
+Total Loans by Industry
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(lubridate)
+library(tidyverse)
+library(formattable)
+library(gt)
+library(scales)
+gt_theme_538 <- function(data,...) {
+  data %>%
+    opt_all_caps()  %>%
+    opt_table_font(
+      font = list(
+        google_font("Chivo"),
+        default_fonts()
+      )
+    ) %>%
+    tab_style(
+      style = cell_borders(
+        sides = "bottom", color = "transparent", weight = px(2)
+      ),
+      locations = cells_body(
+        columns = TRUE,
+        # This is a relatively sneaky way of changing the bottom border
+        # Regardless of data size
+        rows = nrow(data$`_data`)
+      )
+    )  %>% 
+    tab_options(
+      column_labels.background.color = "white",
+      table.border.top.width = px(3),
+      table.border.top.color = "transparent",
+      table.border.bottom.color = "transparent",
+      table.border.bottom.width = px(3),
+      column_labels.border.top.width = px(3),
+      column_labels.border.top.color = "transparent",
+      column_labels.border.bottom.width = px(3),
+      column_labels.border.bottom.color = "black",
+      data_row.padding = px(3),
+      source_notes.font.size = 12,
+      table.font.size = 16,
+      heading.align = "left",
+      ...
+    ) 
+}
+
+bal_sum = ppp_loans%>%
+  summarise(
+            total_curr_amt = sum(CurrentApprovalAmount),
+            avg_curr_amt = mean(CurrentApprovalAmount),
+            med_curr_amt = median(CurrentApprovalAmount),
+            sd_curr_amt = sd(CurrentApprovalAmount)
+            )%>%
+  arrange(desc(total_curr_amt))
+
+gt(data=bal_sum)%>%
+  gt_theme_538() %>% 
+   tab_header(title = "Total PPP Loans Granted (2020-2021)")%>%
+   fmt_currency(
+     columns = c(total_curr_amt, avg_curr_amt, med_curr_amt,sd_curr_amt),
+     currency = "USD",
+     decimals = 0,
+     suffixing = TRUE
+   ) %>% cols_label(
+     total_curr_amt = md("**Total Loan Amt**"),
+     avg_curr_amt = md("**Average Loan Amt**"),
+     med_curr_amt = md("**Median Loan Amt**"),
+     sd_curr_amt = md("**Std. Dev of Loan Amt**")) %>%
+  opt_align_table_header("left")
+
+```
+
+
+```{r}
+bal_sum1 = ppp_loans%>%
+  group_by(Industry)%>%
+  summarise(
+            total_curr_amt = sum(CurrentApprovalAmount),
+            avg_curr_amt = mean(CurrentApprovalAmount),
+            med_curr_amt = median(CurrentApprovalAmount),
+            sd_curr_amt = sd(CurrentApprovalAmount)
+            )%>%
+  arrange(desc(total_curr_amt))
+
+
+gt(data=bal_sum1)%>%
+  gt_theme_538() %>% 
+   tab_header(title = "PPP Loans by Industry")%>%
+   fmt_currency(
+     columns = c(total_curr_amt, avg_curr_amt, med_curr_amt,sd_curr_amt),
+     currency = "USD",
+     decimals = 0,
+     suffixing = TRUE
+   ) %>% cols_label(
+     total_curr_amt = md("**Total Loan Amt**"),
+     avg_curr_amt = md("**Average Loan Amt**"),
+     med_curr_amt = md("**Median Loan Amt**"),
+     sd_curr_amt = md("**Std. Dev of Loan Amt**")) %>%
+  opt_align_table_header("left")
+```
+
+```{r}
+# boxplots by Industry type
+p <- ggplot(ppp_loans, aes(x=Industry, y=CurrentApprovalAmount)) + 
+  geom_boxplot() + 
+  scale_y_continuous(trans='log10', name="Loans in USD", labels = label_number(suffix = " M", scale = 1e-6)) +
+  coord_flip()
+p
+```
+
+
+```{r}
+ggplot(ppp_loans, aes(x=CurrentApprovalAmount)) + 
+  geom_histogram(binwidth = 295000) + 
+  scale_x_continuous(name="Loans in USD", labels = label_number(suffix = " M", scale = 1e-6)) +
+    scale_y_continuous(name="Loans Counts", labels = label_number(suffix = " K", scale = 1e-3))
+```
+
+```{r}
+# boxplots by business type
+p <- ggplot(ppp_loans, aes(x=BusinessType, y=CurrentApprovalAmount)) +
+  geom_boxplot() + 
+  scale_y_continuous(trans='log10', name="Loans in USD", labels = label_number(suffix = " M", scale = 1e-6)) +
+  coord_flip()
+p
+```
+
+#We will use current approval amount, as it reflects the latest loan balances
+```{r}
+ppp_loans%>%
+  group_by(Month_Yr)%>%
+  summarise(Total_Loans = sum(CurrentApprovalAmount))%>%
+  ggplot() + geom_col(aes(x=Month_Yr, y=Total_Loans)) + 
+  scale_y_continuous(trans='log10',
+                     labels = label_number(suffix = "M", scale = 1e-6)
+                     ) +
+  labs(x = "Year-Month", y="Total Loans in USD") 
+  
+```
+
+```{r}
+ppp_loans%>%
+  select(JobsReported, CurrentApprovalAmount)%>%
+  ggplot() + geom_point(aes(x=JobsReported, y=CurrentApprovalAmount)) + 
+  scale_y_log10()
+
+
+
+
+
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

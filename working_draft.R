@@ -114,6 +114,60 @@ ppp_loans%>%
 #The UndisbursedAmount is small and we will ignore it for this analysis
 ppp_loans = subset(ppp_loans, select = -c(UndisbursedAmount))
 
+map(ppp_loans, ~sum(is.na(.)))
+
+ppp_loans = ppp_loans %>% 
+  mutate(BorrowerState = ifelse(is.na(BorrowerState), "UK", BorrowerState))
+#ppp_loans = ppp_loans%>%mutate(BorrowerState = trimws(as.character(BorrowerState)))
+
+state_rb <- readr::read_csv("./red_vs_blue_state.csv")
+state_rb = state_rb%>%mutate(BorrowerState = str_trim(state_rb$BorrowerState))
+
+state_rb = state_rb%>%mutate(politics = ifelse(is.na(Red), "Blue", "Red"))
+
+ppp_loans = ppp_loans%>%left_join(state_rb, by="BorrowerState")
+
+dim(ppp_loans)
+ppp_loans%>%
+  select(BorrowerState, BorrowerName, politics)
+
+
+str(str_trim(state_rb$BorrowerState))
+
+\
+merge(x=x,y=state_rb,by="BorrowerState", all.x=TRUE)
+
+left_join(x, state_rb, by = "BorrowerState")  
+
+ppp_loans = subset(ppp_loans, select = -c(politics, Blue,
+                                          Red, State.y.y,
+                                          State.x.x, State.y, State.x))
+                                          
+                                          
+                                          ,
+                                          Blue.x, Red.x))
+
+ppp_loans = subset(ppp_loans, select = -c(Population,
+                                          Small_Business_Cnt,
+                                          Employment_Estimate_2017,
+                                          Annual_payroll_in_thousand))
+# ;
+# left_join(df1,df2,by=c("V1_1"="V1"))
+
+state_pop <- readr::read_csv("./State_POP_SB_Payroll.csv")
+state_pop = state_pop%>%mutate(BorrowerState = 
+                                 str_trim(state_pop$BorrowerState))
+ppp_loans = ppp_loans%>%left_join(state_pop)
+dim(ppp_loans)
+
+ppp_loans%>%
+  select(Population,
+         Small_Business_Cnt,
+         Employment_Estimate_2017,
+         Annual_payroll_in_thousand)
+
+ppp_loans$Population
+
 # boxplots by Industry type
 p <- ggplot(ppp_loans, aes(x=Industry, y=CurrentApprovalAmount)) + 
   geom_boxplot() + coord_flip()
