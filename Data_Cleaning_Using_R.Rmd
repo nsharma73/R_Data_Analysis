@@ -1,5 +1,5 @@
 ---
-title: "R Notebook"
+title: "R Notebook - PPP Loans Data Cleaning"
 output:
   html_document:
     df_print: paged
@@ -180,5 +180,12 @@ ppp_loans%>%
          Annual_payroll_in_thousand)
 #check na once more
 map(ppp_loans, ~sum(is.na(.)))
+```
+
+This data export will allow analysis (see the ppp loans analysis notebook)
+
+```{r}
+write.csv(ppp_loans, file="export_data_ppp_loans.csv",
+          row.names=FALSE)
 ```
 

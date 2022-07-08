@@ -11,7 +11,7 @@
 
 
 
-<title>R Notebook</title>
+<title>R Notebook - PPP Loans Data Cleaning</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -1632,7 +1632,7 @@ pre code {
 
 
 
-<h1 class="title toc-ignore">R Notebook</h1>
+<h1 class="title toc-ignore">R Notebook - PPP Loans Data Cleaning</h1>
 
 </div>
 
@@ -2484,6 +2484,10 @@ map(ppp_loans, ~sum(is.na(.)))</code></pre>
 ## 
 ## $Annual_payroll_in_thousand
 ## [1] 3795</code></pre>
+<p>This data export will allow analysis (see the ppp loans analysis
+notebook)</p>
+<pre class="r"><code>write.csv(ppp_loans, file=&quot;export_data_ppp_loans.csv&quot;,
+          row.names=FALSE)</code></pre>
 
 
 

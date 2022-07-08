@@ -1,16 +1,16 @@
 ---
-title: "PPP_Loans_Analysis"
+title: "PPP Loans Analysis"
 output:
   html_document: default
   pdf_document: default
-date: '2022-07-07'
+date: '2022-07-08'
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## PPP Loans Analysis
+## PPP Loans - Puprose and Impact
 
 The Paycheck Protection Program (PPP) is a \$953-billion business loan program established by the United States federal government, led by the Donald Trump administration in 2020 through the Coronavirus Aid, Relief, and Economic Security Act (CARES Act) to help certain businesses, self-employed workers, sole proprietors, certain non-profit organizations, and tribal businesses continue paying their workers.
 
@@ -18,9 +18,22 @@ The Paycheck Protection Program allows entities to apply for low-interest privat
 
 According to a 2022 study, the PPP: cumulatively preserved between 2 and 3 million job-years of employment over 14 months at a cost of USD 169K to USD 258K per job-year retained. These numbers imply that only 23 to 34 percent of PPP dollars went directly to workers who would otherwise have lost jobs; the balance flowed to business owners and shareholders, including creditors and suppliers of PPP-receiving firms. Program incidence was ultimately highly regressive, with about three-quarters of PPP funds accruing to the top quintile of households. PPP's breakneck scale-up, its high cost per job saved, and its regressive incidence have a common origin: PPP was essentially not specifically targeted because the United States lacked the administrative infrastructure to do otherwise. Harnessing modern administrative systems, other high-income countries were able to better target pandemic business aid to firms in financial distress. Building similar capacity in the U.S. would enable improved targeting when the next pandemic or other large-scale economic emergency inevitably arises.
 
--   Research Questions \*
+Data source: https://data.sba.gov/dataset/ppp-foia
+File name: public_150k_plus_220703.csv
 
-Total Loans by Industry
+-   **Research Questions**
+1. How many, what amount and when were the PPP loans granted?
+2. Did low income communities benefit from the loans?
+3. Which banks led the processing of PPP loans?
+4. Did the industries hardest hit by COVID-19 benefit from the loans?
+5. Which industries and business types benefited from the PPP loans?
+6. Are there differences in the average loan amounts granted across business types and industries?
+7. Are there any outliers or evidence of Fraud in the data?
+8. Did certain states benefit more than the others?
+
+### The code below runs after data pre-processing
+
+Loading key libraries used for the analysis and setting up a global table format (via a function):
 
 ```{r}
 library(dplyr)
@@ -70,7 +83,10 @@ gt_theme_538 <- function(data,...) {
     ) 
 }
 ```
-Load Clean Data and Start Analysis
+
+Load Clean Data and Starting Analysis
+1. Calculate the total loans in the dataset, the key loan metrics used are: total loan count, total jobs saved (or reported by the borrower), total current loan amt (this aggregated all draws made by the borrower), avearge current loan amount, median current loan amount and standard deviation of current loan amount.
+
 ```{r}
 setwd("~/Desktop/NYCDSA/R/R_Data_Analysis")
 ppp_loans <- readr::read_csv("export_data_ppp_loans.csv")
@@ -104,6 +120,9 @@ gt(data=bal_sum)%>%
 
 ```
 
+
+2. Loan metrics split by Industry Type (as defined by 2 digit NACIS codes).
+
 ```{r}
 bal_sum1 = ppp_loans%>%
   group_by(Industry)%>%
@@ -135,6 +154,8 @@ gt(data=bal_sum1)%>%
   opt_align_table_header("left")
 ```
 
+3. Loan metrics split by Business Type (as defined by 2 digit NACIS codes)
+
 ```{r}
 bal_sum1 = ppp_loans%>%
   group_by(BusinessType)%>%
@@ -165,6 +186,9 @@ gt(data=bal_sum1)%>%
      sd_curr_amt = md("**Std. Dev of Loan Amt**")) %>%
   opt_align_table_header("left")
 ```
+
+4. Loan metrics split by Business Age.
+
 ```{r}
 
 bal_sum2 = ppp_loans%>%
@@ -196,48 +220,80 @@ gt(data=bal_sum2)%>%
      sd_curr_amt = md("**Std. Dev of Loan Amt**")) %>%
   opt_align_table_header("left")
 ```
-```{r}
-gt_theme_espn <- function(data, ...){
-  data %>% 
-    opt_all_caps()  %>%
-    opt_table_font(
-      font = list(
-        google_font("Lato"),
-        default_fonts()
-      )
-    )  %>% 
-    opt_row_striping() %>% 
-    tab_options(
-      row.striping.background_color = "#fafafa",
-      table_body.hlines.color = "#f6f7f7",
-      source_notes.font.size = 12,
-      table.font.size = 16,
-      table.width = px(700),
-      heading.align = "left",
-      heading.title.font.size = 24,
-      table.border.top.color = "transparent",
-      table.border.top.width = px(3),
-      data_row.padding = px(7),
-      ...
-    ) 
-}
-```
 
+5. Loan metrics split by Rural and Urban communities.
+
+```{r}
+bal_sum3 = ppp_loans%>%
+  group_by(RuralUrbanIndicator)%>%
+  summarise(total_loan_cnt = n(),
+            total_curr_amt = sum(CurrentApprovalAmount),
+            med_curr_amt = median(CurrentApprovalAmount)
+            )%>%
+  arrange(desc(total_curr_amt))
+
+
+gt(data=bal_sum3)%>%
+  gt_theme_538() %>% 
+   tab_header(title = "PPP Loans by Rural Urban Communities")%>%
+   fmt_currency(
+     columns = c(total_curr_amt, med_curr_amt),
+     currency = "USD",
+     decimals = 0,
+     suffixing = TRUE
+   ) %>% cols_label(
+     RuralUrbanIndicator = md("**Urban/Rural**"),
+     total_loan_cnt = md("**Total Loan Count**"),
+     total_curr_amt = md("**Total Loan Amt**"),
+     med_curr_amt = md("**Median Loan Amt**"))%>%
+  opt_align_table_header("left")
+```
+6. Loan metrics split by Low to Moderate income communities.
+
+```{r}
+bal_sum3 = ppp_loans%>%
+  group_by(LMIIndicator)%>%
+  summarise(total_loan_cnt = n(),
+            total_curr_amt = sum(CurrentApprovalAmount),
+            med_curr_amt = median(CurrentApprovalAmount)
+            )%>%
+  arrange(desc(total_curr_amt))
+
+
+gt(data=bal_sum3)%>%
+  gt_theme_538() %>% 
+   tab_header(title = "PPP Loans by Low to Moderate Income Communities")%>%
+   fmt_currency(
+     columns = c(total_curr_amt, med_curr_amt),
+     currency = "USD",
+     decimals = 0,
+     suffixing = TRUE
+   ) %>% cols_label(
+     LMIIndicator = md("**Low/Moderate Income**"),
+     total_loan_cnt = md("**Total Loan Count**"),
+     total_curr_amt = md("**Total Loan Amt**"),
+     med_curr_amt = md("**Median Loan Amt**"))%>%
+  opt_align_table_header("left")
+
+```
+7. Example of detecting outliers, where some data is missing and loan amounts exceed 3 times the median loan amount.
 
 ```{r}
 ppp_loans%>%
   filter(BusinessAgeDescription == "Unanswered" & 
            BusinessType == "Unknown" &
-           CurrentApprovalAmount > median(CurrentApprovalAmount, na.rm = TRUE)) %>%
+           CurrentApprovalAmount > 3*median(CurrentApprovalAmount, na.rm = TRUE)) %>%
   select(BorrowerName, JobsReported, OriginatingLender, CurrentApprovalAmount, Industry, State)%>%
    gt() %>% 
-  gt_theme_espn() %>% 
-  tab_header(title = md("**Possible Fraud**"))
+  gt_theme_538() %>% 
+  tab_header(title = md("**Outliers and Possible Fraud**"))
 ```
+
+8. Another example of detecting outliers, where loan amounts exceed 2M and loan to job ratio is high.
 
 ```{r}
 ppp_loans%>%
-  filter(CurrentApprovalAmount>1000000)%>%
+  filter(CurrentApprovalAmount>2000000)%>%
   select(BorrowerName, JobsReported, CurrentApprovalAmount, Industry, State)%>%
   mutate(loan_job_ratio = CurrentApprovalAmount/JobsReported)%>%
   top_n(10)%>%
@@ -245,6 +301,23 @@ ppp_loans%>%
   gt_theme_538() %>%  
   tab_header(title = md("**Outliers**"))
 ```
+```{r}
+ppp_loans%>%
+  filter(CurrentApprovalAmount<max(CurrentApprovalAmount))%>%
+  filter(JobsReported > 10 & JobsReported < 50)%>%
+  filter(BusinessAgeDescription == "New Business or 2 years or less")%>%
+  select(BorrowerName, BorrowerState,
+         Industry, CurrentApprovalAmount, JobsReported)%>%
+  mutate(LTJ_ratio = CurrentApprovalAmount/JobsReported )%>%
+  arrange(desc(LTJ_ratio))%>%
+  top_n(10)%>%
+  gt() %>% 
+  gt_theme_538() %>%  
+  tab_header(title = md("**Fraud or Outliers**"))
+
+```
+
+9. Boxplot by industry, the scale used here is log10 for better visualization.
 
 ```{r}
 # boxplots by Industry type
@@ -255,12 +328,31 @@ p <- ggplot(ppp_loans, aes(x=Industry, y=CurrentApprovalAmount)) +
 p
 ```
 
+10. Histogram to evaluate loan amount distribution.
+
 ```{r}
 ggplot(ppp_loans, aes(x=CurrentApprovalAmount)) + 
-  geom_histogram(binwidth = 295000) + 
+  geom_histogram(binwidth = 300000) + 
   scale_x_continuous(name="Loans in USD", labels = label_number(suffix = " M", scale = 1e-6)) +
     scale_y_continuous(name="Loans Counts", labels = label_number(suffix = " K", scale = 1e-3))
 ```
+
+```{r}
+ggplot(ppp_loans, aes(x=CurrentApprovalAmount)) + 
+  geom_histogram(binwidth = 500000) + 
+  scale_x_continuous(name="Loans in USD", labels = label_number(suffix = " M", scale = 1e-6)) +
+    scale_y_continuous(name="Loans Counts", labels = label_number(suffix = " K", scale = 1e-3))
+```
+
+```{r}
+ggplot(ppp_loans, aes(x=CurrentApprovalAmount)) + 
+  geom_histogram(binwidth = 750000) + 
+  scale_x_continuous(name="Loans in USD", labels = label_number(suffix = " M", scale = 1e-6)) +
+    scale_y_continuous(name="Loans Counts", labels = label_number(suffix = " K", scale = 1e-3))
+```
+
+
+11. Boxplot by business type, the scale used here is log10 for better visualization.
 
 ```{r}
 # boxplots by business type
@@ -271,7 +363,22 @@ p <- ggplot(ppp_loans, aes(x=BusinessType, y=CurrentApprovalAmount)) +
 p
 ```
 
-We will use current approval amount, as it reflects the latest loan balances
+
+```{r}
+# boxplots by business type
+sub_ppp = ppp_loans%>%
+  filter(JobsReported <500)%>%
+  filter(CurrentApprovalAmount<max(CurrentApprovalAmount))
+  
+p <- ggplot(sub_ppp, aes(x=BusinessType, y=CurrentApprovalAmount)) +
+  geom_boxplot() + 
+  scale_y_continuous(trans='log10', name="Loans in USD (<500 Jobs)", labels = label_number(suffix = " M", scale = 1e-6)) +
+  coord_flip()
+p
+```
+
+
+12. Loan trend over time, using month and year time series.
 
 ```{r}
 q <- ppp_loans%>%
@@ -301,6 +408,8 @@ q + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
 ```
 
+13. Loan trend over time, using month and year time series, split by Rural and Urban Indicator.
+
 ```{r}
 q <- ppp_loans%>%
   group_by(Month_Yr, RuralUrbanIndicator)%>%
@@ -315,6 +424,9 @@ q <- ppp_loans%>%
 q + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) 
 
 ```
+
+14. Loan trend over time, using month and year time series, split by Low to Moderate Income Indicator.
+
 ```{r}
 q <- ppp_loans%>%
   group_by(Month_Yr, LMIIndicator)%>%
@@ -329,6 +441,9 @@ q <- ppp_loans%>%
 q + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) 
 
 ```
+
+15. Top 10 banks that benefited from distributing the loans.
+
 ```{r}
 bank_bal <- ppp_loans%>%
   group_by(OriginatingLender)%>%
@@ -351,9 +466,12 @@ q + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))  + coord
 
 ```
 
-## Including USA Map
+### Including USA Map
 
-You can also embed plots, for example:
+16. This analysis shows loan grants by state:
+* The data processing here gets the state longitude and latitude, then plots the data on map in two ways:
+  a. Loans by State
+  b. Loans per Capita (Current Loan Amt/State Population)
 
 ```{r}
 states <- map_data("state")
@@ -428,3 +546,4 @@ pp <- pp + labs(fill="Loan Amount per Capita")
 pp
 ```
 
+End of Analysis
