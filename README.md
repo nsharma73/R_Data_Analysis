@@ -19,4 +19,5 @@ File name: public_150k_plus_220703.csv
 6. Are there differences in the average loan amounts granted across business types and industries?
 7. Are there any outliers or evidence of Fraud in the data?
 8. Did certain states benefit more than the others?
- 
+
+Refer to Data_Cleaning_Using_R and ppp_loans_analysis markdown files for code.
