@@ -6,6 +6,14 @@
 #
 #    http://shiny.rstudio.com/
 #
+# The data set high value ppp loans is required to run this app:
+# high_ppp=
+#   ppp_loans%>%
+#   filter(CurrentApprovalAmount>2000000)%>%
+#   filter(JobsReported>100)%>%
+#   select(BorrowerName,CurrentApprovalAmount,JobsReported,
+#          Industry,BusinessType,BusinessAgeDescription)
+
 
 library(shiny)
 library(shinydashboard)
