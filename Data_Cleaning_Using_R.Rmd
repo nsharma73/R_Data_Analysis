@@ -1,6 +1,8 @@
 ---
 title: "R Notebook"
-output: html_notebook
+output:
+  html_document:
+    df_print: paged
 ---
 
 This is a data cleaning notebook. 
@@ -28,6 +30,7 @@ library(lubridate)
 library(tidyverse)
 library(formattable)
 library(gt)
+library(knitr)
 
 #Load Data
 ppp_loans <- readr::read_csv("./ppp_loans.csv")

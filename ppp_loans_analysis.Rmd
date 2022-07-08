@@ -1,6 +1,8 @@
 ---
 title: "PPP_Loans_Analysis"
-output: html_document
+output:
+  html_document: default
+  pdf_document: default
 date: '2022-07-07'
 ---
 
@@ -10,14 +12,13 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## PPP Loans Analysis
 
-The Paycheck Protection Program (PPP) is a $953-billion business loan program established by the United States federal government, led by the Donald Trump administration in 2020 through the Coronavirus Aid, Relief, and Economic Security Act (CARES Act) to help certain businesses, self-employed workers, sole proprietors, certain non-profit organizations, and tribal businesses continue paying their workers.
+The Paycheck Protection Program (PPP) is a \$953-billion business loan program established by the United States federal government, led by the Donald Trump administration in 2020 through the Coronavirus Aid, Relief, and Economic Security Act (CARES Act) to help certain businesses, self-employed workers, sole proprietors, certain non-profit organizations, and tribal businesses continue paying their workers.
 
-The Paycheck Protection Program allows entities to apply for low-interest private loans to pay for their payroll and certain other costs. The amount of a PPP loan is approximately equal to 2.5 times the applicant's average monthly payroll costs. In some cases, an applicant may receive a second draw typically equal to the first. The loan proceeds may be used to cover payroll costs, rent, interest, and utilities. The loan may be partially or fully forgiven if the business keeps its employee counts and employee wages stable. The program is implemented by the U.S. Small Business Administration. The deadline to apply for a PPP loan was March 31, 2021.
-Some economists have found that the PPP did not save as many jobs as purported and aided too many businesses that were not at risk of going under. They noted that other programs, such as unemployment insurance, food assistance, and aid to state and local governments, would have been more efficient at strengthening the economy. Opponents to this view note that the PPP functioned well to prevent business closures and cannot be measured on the number of jobs saved alone.
+The Paycheck Protection Program allows entities to apply for low-interest private loans to pay for their payroll and certain other costs. The amount of a PPP loan is approximately equal to 2.5 times the applicant's average monthly payroll costs. In some cases, an applicant may receive a second draw typically equal to the first. The loan proceeds may be used to cover payroll costs, rent, interest, and utilities. The loan may be partially or fully forgiven if the business keeps its employee counts and employee wages stable. The program is implemented by the U.S. Small Business Administration. The deadline to apply for a PPP loan was March 31, 2021. Some economists have found that the PPP did not save as many jobs as purported and aided too many businesses that were not at risk of going under. They noted that other programs, such as unemployment insurance, food assistance, and aid to state and local governments, would have been more efficient at strengthening the economy. Opponents to this view note that the PPP functioned well to prevent business closures and cannot be measured on the number of jobs saved alone.
 
 According to a 2022 study, the PPP: cumulatively preserved between 2 and 3 million job-years of employment over 14 months at a cost of USD 169K to USD 258K per job-year retained. These numbers imply that only 23 to 34 percent of PPP dollars went directly to workers who would otherwise have lost jobs; the balance flowed to business owners and shareholders, including creditors and suppliers of PPP-receiving firms. Program incidence was ultimately highly regressive, with about three-quarters of PPP funds accruing to the top quintile of households. PPP's breakneck scale-up, its high cost per job saved, and its regressive incidence have a common origin: PPP was essentially not specifically targeted because the United States lacked the administrative infrastructure to do otherwise. Harnessing modern administrative systems, other high-income countries were able to better target pandemic business aid to firms in financial distress. Building similar capacity in the U.S. would enable improved targeting when the next pandemic or other large-scale economic emergency inevitably arises.
 
-* Research Questions *
+-   Research Questions \*
 
 Total Loans by Industry
 
@@ -29,6 +30,8 @@ library(tidyverse)
 library(formattable)
 library(gt)
 library(scales)
+library(knitr)
+
 gt_theme_538 <- function(data,...) {
   data %>%
     opt_all_caps()  %>%
@@ -66,9 +69,15 @@ gt_theme_538 <- function(data,...) {
       ...
     ) 
 }
+```
+Load Clean Data and Start Analysis
+```{r}
+setwd("~/Desktop/NYCDSA/R/R_Data_Analysis")
+ppp_loans <- readr::read_csv("export_data_ppp_loans.csv")
 
 bal_sum = ppp_loans%>%
-  summarise(
+  summarise(total_loan_cnt = n(),
+            total_jobs = sum(JobsReported),
             total_curr_amt = sum(CurrentApprovalAmount),
             avg_curr_amt = mean(CurrentApprovalAmount),
             med_curr_amt = median(CurrentApprovalAmount),
@@ -85,6 +94,8 @@ gt(data=bal_sum)%>%
      decimals = 0,
      suffixing = TRUE
    ) %>% cols_label(
+     total_loan_cnt = md("**Total Loan Count**"),
+     total_jobs = md("**Total Jobs Saved**"),
      total_curr_amt = md("**Total Loan Amt**"),
      avg_curr_amt = md("**Average Loan Amt**"),
      med_curr_amt = md("**Median Loan Amt**"),
@@ -93,11 +104,11 @@ gt(data=bal_sum)%>%
 
 ```
 
-
 ```{r}
 bal_sum1 = ppp_loans%>%
   group_by(Industry)%>%
-  summarise(
+  summarise(total_loan_cnt = n(),
+            total_jobs = sum(JobsReported),
             total_curr_amt = sum(CurrentApprovalAmount),
             avg_curr_amt = mean(CurrentApprovalAmount),
             med_curr_amt = median(CurrentApprovalAmount),
@@ -115,6 +126,8 @@ gt(data=bal_sum1)%>%
      decimals = 0,
      suffixing = TRUE
    ) %>% cols_label(
+     total_loan_cnt = md("**Total Loan Count**"),
+     total_jobs = md("**Total Jobs Saved**"),
      total_curr_amt = md("**Total Loan Amt**"),
      avg_curr_amt = md("**Average Loan Amt**"),
      med_curr_amt = md("**Median Loan Amt**"),
@@ -123,14 +136,124 @@ gt(data=bal_sum1)%>%
 ```
 
 ```{r}
+bal_sum1 = ppp_loans%>%
+  group_by(BusinessType)%>%
+  summarise(total_loan_cnt = n(),
+            total_jobs = sum(JobsReported),
+            total_curr_amt = sum(CurrentApprovalAmount),
+            avg_curr_amt = mean(CurrentApprovalAmount),
+            med_curr_amt = median(CurrentApprovalAmount),
+            sd_curr_amt = sd(CurrentApprovalAmount)
+            )%>%
+  arrange(desc(total_curr_amt))
+
+
+gt(data=bal_sum1)%>%
+  gt_theme_538() %>% 
+   tab_header(title = "PPP Loans by Business Type")%>%
+   fmt_currency(
+     columns = c(total_curr_amt, avg_curr_amt, med_curr_amt,sd_curr_amt),
+     currency = "USD",
+     decimals = 0,
+     suffixing = TRUE
+   ) %>% cols_label(
+     total_loan_cnt = md("**Total Loan Count**"),
+     total_jobs = md("**Total Jobs Saved**"),
+     total_curr_amt = md("**Total Loan Amt**"),
+     avg_curr_amt = md("**Average Loan Amt**"),
+     med_curr_amt = md("**Median Loan Amt**"),
+     sd_curr_amt = md("**Std. Dev of Loan Amt**")) %>%
+  opt_align_table_header("left")
+```
+```{r}
+
+bal_sum2 = ppp_loans%>%
+  group_by(BusinessAgeDescription)%>%
+  summarise(total_loan_cnt = n(),
+            total_jobs = sum(JobsReported),
+            total_curr_amt = sum(CurrentApprovalAmount),
+            avg_curr_amt = mean(CurrentApprovalAmount),
+            med_curr_amt = median(CurrentApprovalAmount),
+            sd_curr_amt = sd(CurrentApprovalAmount)
+            )%>%
+  arrange(desc(total_curr_amt))
+
+
+gt(data=bal_sum2)%>%
+  gt_theme_538() %>% 
+   tab_header(title = "PPP Loans by Business Age")%>%
+   fmt_currency(
+     columns = c(total_curr_amt, avg_curr_amt, med_curr_amt,sd_curr_amt),
+     currency = "USD",
+     decimals = 0,
+     suffixing = TRUE
+   ) %>% cols_label(
+     total_loan_cnt = md("**Total Loan Count**"),
+     total_jobs = md("**Total Jobs Saved**"),
+     total_curr_amt = md("**Total Loan Amt**"),
+     avg_curr_amt = md("**Average Loan Amt**"),
+     med_curr_amt = md("**Median Loan Amt**"),
+     sd_curr_amt = md("**Std. Dev of Loan Amt**")) %>%
+  opt_align_table_header("left")
+```
+```{r}
+gt_theme_espn <- function(data, ...){
+  data %>% 
+    opt_all_caps()  %>%
+    opt_table_font(
+      font = list(
+        google_font("Lato"),
+        default_fonts()
+      )
+    )  %>% 
+    opt_row_striping() %>% 
+    tab_options(
+      row.striping.background_color = "#fafafa",
+      table_body.hlines.color = "#f6f7f7",
+      source_notes.font.size = 12,
+      table.font.size = 16,
+      table.width = px(700),
+      heading.align = "left",
+      heading.title.font.size = 24,
+      table.border.top.color = "transparent",
+      table.border.top.width = px(3),
+      data_row.padding = px(7),
+      ...
+    ) 
+}
+```
+
+
+```{r}
+ppp_loans%>%
+  filter(BusinessAgeDescription == "Unanswered" & 
+           BusinessType == "Unknown" &
+           CurrentApprovalAmount > median(CurrentApprovalAmount, na.rm = TRUE)) %>%
+  select(BorrowerName, JobsReported, OriginatingLender, CurrentApprovalAmount, Industry, State)%>%
+   gt() %>% 
+  gt_theme_espn() %>% 
+  tab_header(title = md("**Possible Fraud**"))
+```
+
+```{r}
+ppp_loans%>%
+  filter(CurrentApprovalAmount>1000000)%>%
+  select(BorrowerName, JobsReported, CurrentApprovalAmount, Industry, State)%>%
+  mutate(loan_job_ratio = CurrentApprovalAmount/JobsReported)%>%
+  top_n(10)%>%
+   gt() %>% 
+  gt_theme_538() %>%  
+  tab_header(title = md("**Outliers**"))
+```
+
+```{r}
 # boxplots by Industry type
 p <- ggplot(ppp_loans, aes(x=Industry, y=CurrentApprovalAmount)) + 
   geom_boxplot() + 
-  scale_y_continuous(trans='log10', name="Loans in USD", labels = label_number(suffix = " M", scale = 1e-6)) +
+  scale_y_continuous(trans = "log10", name="Loans in USD (log10 scale)", labels = label_number(suffix = " M", scale = 1e-6)) +
   coord_flip()
 p
 ```
-
 
 ```{r}
 ggplot(ppp_loans, aes(x=CurrentApprovalAmount)) + 
@@ -143,42 +266,165 @@ ggplot(ppp_loans, aes(x=CurrentApprovalAmount)) +
 # boxplots by business type
 p <- ggplot(ppp_loans, aes(x=BusinessType, y=CurrentApprovalAmount)) +
   geom_boxplot() + 
-  scale_y_continuous(trans='log10', name="Loans in USD", labels = label_number(suffix = " M", scale = 1e-6)) +
+  scale_y_continuous(trans='log10', name="Loans in USD (log10 scale)", labels = label_number(suffix = " M", scale = 1e-6)) +
   coord_flip()
 p
 ```
 
-#We will use current approval amount, as it reflects the latest loan balances
+We will use current approval amount, as it reflects the latest loan balances
+
 ```{r}
-ppp_loans%>%
+q <- ppp_loans%>%
   group_by(Month_Yr)%>%
   summarise(Total_Loans = sum(CurrentApprovalAmount))%>%
   ggplot() + geom_col(aes(x=Month_Yr, y=Total_Loans)) + 
   scale_y_continuous(trans='log10',
                      labels = label_number(suffix = "M", scale = 1e-6)
-                     ) +
-  labs(x = "Year-Month", y="Total Loans in USD") 
+  ) +
+  labs(x = "Year-Month", y="Total Loans in USD (log10 scale)") 
+  
+q + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
   
 ```
 
 ```{r}
-ppp_loans%>%
-  select(JobsReported, CurrentApprovalAmount)%>%
-  ggplot() + geom_point(aes(x=JobsReported, y=CurrentApprovalAmount)) + 
-  scale_y_log10()
+q <- ppp_loans%>%
+  group_by(Month_Yr)%>%
+  summarise(Total_Loans = sum(CurrentApprovalAmount))%>%
+  ggplot() + geom_col(aes(x=Month_Yr, y=Total_Loans)) + 
+  scale_y_continuous(
+                     labels = label_number(suffix = "M", scale = 1e-6)
+  ) +
+  labs(x = "Year-Month", y="Total Loans in USD") 
+  
+q + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) 
 
+```
 
+```{r}
+q <- ppp_loans%>%
+  group_by(Month_Yr, RuralUrbanIndicator)%>%
+  summarise(Total_Loans = sum(CurrentApprovalAmount))%>%
+  ggplot() + geom_col(aes(x=Month_Yr, y=Total_Loans, fill = RuralUrbanIndicator)) + 
+  scale_fill_brewer(palette="Set1") +
+  scale_y_continuous(
+                     labels = label_number(suffix = "M", scale = 1e-6)
+  ) +
+  labs(x = "Year-Month", y="Total Loans in USD") 
+  
+q + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) 
 
+```
+```{r}
+q <- ppp_loans%>%
+  group_by(Month_Yr, LMIIndicator)%>%
+  summarise(Total_Loans = sum(CurrentApprovalAmount))%>%
+  ggplot() + geom_col(aes(x=Month_Yr, y=Total_Loans, fill = LMIIndicator)) + 
+  scale_fill_brewer(palette="Set2") +
+  scale_y_continuous(
+                     labels = label_number(suffix = "M", scale = 1e-6)
+  ) +
+  labs(x = "Year-Month", y="Total Loans in USD") 
+  
+q + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) 
+
+```
+```{r}
+bank_bal <- ppp_loans%>%
+  group_by(OriginatingLender)%>%
+  summarise(Total_Loans = sum(CurrentApprovalAmount))%>%
+  arrange(desc(Total_Loans)) %>%
+  top_n(10)
+```
+
+```{r}
+q <- bank_bal%>%  
+  ggplot() + 
+  geom_col(aes(x=reorder(OriginatingLender, Total_Loans), y=Total_Loans)) + 
+  scale_y_continuous(
+                     labels = label_number(suffix = "M", scale = 1e-6)
+  ) + 
+  labs(x = "Bank Name", y="Total Loans in USD") 
+
+q + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))  + coord_flip()
 
 
 ```
 
-## Including Plots
+## Including USA Map
 
 You can also embed plots, for example:
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r}
+states <- map_data("state")
+
+st_loans = ppp_loans%>%
+  select(BorrowerState, State, Population, 
+         politics, Small_Business_Cnt, 
+         Employment_Estimate_2017,
+         Annual_payroll_in_thousand,
+         CurrentApprovalAmount)%>%
+  mutate(region = tolower(State))%>%
+  group_by(BorrowerState, State, region)%>%
+  summarise(total_loan_amt = sum(CurrentApprovalAmount),
+            st_pop = max(Population),
+            sb_cnt = max(Small_Business_Cnt))%>%
+  mutate(loan_pc = total_loan_amt/st_pop,
+         loan_psb = total_loan_amt/sb_cnt)
+
+tfmerged <- merge(states, st_loans, sort = FALSE, by = "region")
+tfmerged <- tfmerged[order(tfmerged$order), ]
+
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+```{r}
+gg <- ggplot()
+gg <- gg + geom_map(data=tfmerged, map=states,
+                    aes(x=long, y=lat, map_id=region),
+                    fill="#ffffff", color="#ffffff", size=0.15)
+
+gg <- gg + geom_map(data=tfmerged, map=states,
+                    aes(fill=total_loan_amt, map_id=region),
+                    color="#ffffff", size=0.15)
+
+gg <- gg + scale_fill_continuous(low='thistle2', high='darkred', 
+                                 guide='colorbar',
+                                 labels = label_number(suffix = " M", scale = 1e-6))
+gg <- gg + labs(x=NULL, y=NULL)
+gg <- gg + coord_map("albers", lat0 = 39, lat1 = 45) 
+gg <- gg + theme(panel.border = element_blank())
+gg <- gg + theme(panel.background = element_blank())
+gg <- gg + theme(axis.ticks = element_blank())
+gg <- gg + theme(axis.text = element_blank())
+gg <- gg + labs(fill="Loan Amount") 
+```
+
+```{r}
+gg
+```
+
+```{r}
+pp <- ggplot()
+pp <- pp + geom_map(data=tfmerged, map=states,
+                    aes(x=long, y=lat, map_id=region),
+                    fill="#ffffff", color="#ffffff", size=0.15)
+
+pp <- pp + geom_map(data=tfmerged, map=states,
+                    aes(fill=loan_pc, map_id=region),
+                    color="#ffffff", size=0.15)
+
+pp <- pp + scale_fill_continuous(low='thistle2', high='darkred', 
+                                 guide='colorbar',
+                                 labels = label_number(suffix = " K", scale = 1e-3))
+pp <- pp + labs(x=NULL, y=NULL)
+pp <- pp + coord_map("albers", lat0 = 39, lat1 = 45) 
+pp <- pp + theme(panel.border = element_blank())
+pp <- pp + theme(panel.background = element_blank())
+pp <- pp + theme(axis.ticks = element_blank())
+pp <- pp + theme(axis.text = element_blank())
+pp <- pp + labs(fill="Loan Amount per Capita") 
+```
+```{r}
+pp
+```
+
